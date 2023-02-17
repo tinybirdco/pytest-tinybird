@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set up tox
+        run: |
+          pip install --upgrade pip tox
+      - name: Run tox
+        env:
+          TINYBIRD_URL: https://api.tinybird.co
+          TINYBIRD_DATASOURCE: ci_tests
+          TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
+          CI_COMMIT_SHA: ${{ github.sha }}
+          CI_JOB_ID: ${{ github.job }}-${{ matrix.python-version }}
+          CI_JOB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          CI_JOB_NAME: ${{ github.job }}-${{ matrix.python-version }}
+        run: |
+          tox -e py -- --report-to-tinybird
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - name: Set up tox
+        run: |
+          pip install --upgrade pip tox
+      - name: Run tox
+        run: |
+          tox -e lint

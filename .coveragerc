@@ -1,0 +1,8 @@
+[run]
+branch = True
+source = pytest_tinybird
+
+[paths]
+source =
+   pytest_tinybird
+   .tox/*/lib/python*/site-packages/pytest_tinybird

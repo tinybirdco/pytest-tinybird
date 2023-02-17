@@ -1,0 +1,6 @@
+flake8==6.0.0
+pylint==2.16.2
+pytest==7.2.1
+requests>=2.28.1
+tox==4.2.8
+
