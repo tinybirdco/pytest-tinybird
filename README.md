@@ -3,6 +3,7 @@ pytest-tinybird
 
 A pytest plugin to report test results to tinybird
 
+![Top test passed](https://img.shields.io/endpoint?url=https://api.tinybird.co/v0/pipes/top_test_passed.ndjson?token=p.eyJ1IjogIjNhZjhlMTBhLTM2MjEtNDQ3OC04MWJmLTE5MDQ5N2UwNjBjYiIsICJpZCI6ICJkNDNmZGQ2Ni03NzY1LTQzZGYtYjEyNS0wYzNjYWJiMDgxZjUifQ.yWypEczMfJlgkjNt29pCf45XaxE1dMOr-oznll5tjpY)
 
 
 Requirements
