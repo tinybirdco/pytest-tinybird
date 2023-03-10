@@ -35,6 +35,9 @@ class TinybirdReport:
         terminalreporter: TerminalReporter = session.config.pluginmanager.get_plugin(
             "terminalreporter"
         )
+        # special check for pytest-xdist plugin, we do not want to send report for each worker.
+        if hasattr(terminalreporter.config, 'workerinput'):
+            return
         report = []
         for k in terminalreporter.stats:
             for test in terminalreporter.stats[k]:
@@ -60,7 +63,7 @@ class TinybirdReport:
             data=data,
             timeout=REQUEST_TIMEOUT)
         if response.status_code != 202:
-            log.error("Error while uploading to tinybird")
+            log.error("Error while uploading to tinybird %s", response.status_code)
 
     @pytest.hookimpl(trylast=True)
     def pytest_sessionfinish(self, session: Session, exitstatus: Union[int, ExitCode]):
