@@ -27,6 +27,7 @@ jobs:
           TINYBIRD_URL: https://api.tinybird.co
           TINYBIRD_DATASOURCE: ci_tests
           TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
+          CI_COMMIT_BRANCH: ${{ github.ref_name }}
           CI_COMMIT_SHA: ${{ github.sha }}
           CI_JOB_ID: ${{ github.job }}-${{ matrix.python-version }}
           CI_JOB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
