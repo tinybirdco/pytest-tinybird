@@ -49,6 +49,7 @@ class TinybirdReport:
                     report.append({
                         'date': now,
                         'commit': self.commit,
+                        'branch': self.branch,
                         'job_id': self.job_id,
                         'job_url': self.job_url,
                         'job_name': self.job_name,
@@ -56,8 +57,7 @@ class TinybirdReport:
                         'test_name': test.head_line,
                         'test_part': test.when,
                         'duration': test.duration,
-                        'outcome': test.outcome,
-                        'branch': self.branch
+                        'outcome': test.outcome
                     })
                 except AttributeError:
                     pass
