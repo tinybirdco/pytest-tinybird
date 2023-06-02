@@ -26,6 +26,10 @@ class TinybirdReport:
         self.job_id = os.environ.get('CI_JOB_ID', 'ci_job_id_unknown')
         self.job_url = os.environ.get('CI_JOB_URL', 'job_url_unknown')
         self.job_name = os.environ.get('CI_JOB_NAME', 'job_name_unknown')
+        self.branch = os.environ.get(
+            'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
+            os.environ.get('CI_COMMIT_BRANCH', 'ci_commit_branch_unknown')
+        )
 
     def report(self, session: Session):
         if None in [self.base_url, self.datasource_name, self.token]:
@@ -45,6 +49,7 @@ class TinybirdReport:
                     report.append({
                         'date': now,
                         'commit': self.commit,
+                        'branch': self.branch,
                         'job_id': self.job_id,
                         'job_url': self.job_url,
                         'job_name': self.job_name,
