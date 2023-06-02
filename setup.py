@@ -21,7 +21,7 @@ setup(
     packages=['pytest_tinybird'],
     author='jlmadurga',
     author_email='jlmadurga@gmail.com',
-    version='0.1.0',
+    version='0.2.0',
     url='https://github.com/jlmadurga/pytest-tinybird',
     license='MIT',
     install_requires=[
