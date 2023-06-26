@@ -14,7 +14,7 @@ Requirements
 
 - Python >=3.8
 - pytest 3.8 or newer (previous versions might be compatible)
-- Tinybird account and a token with append permissions
+- [Tinybird account](https://www.tinybird.co/) and a [token with append permissions](https://www.tinybird.co/docs/concepts/auth-tokens.html?highlight=token#auth-token-scopes)
 
 
 Installation
