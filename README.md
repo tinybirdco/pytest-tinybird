@@ -29,7 +29,7 @@ Installation
 Usage
 ------------
 
-You just need a [tinybird](https://www.tinybird.co/) account and token with append permissions
+You just need your [tinybird](https://www.tinybird.co/) account and the token with append permissions
 
 Set these env variables:
 
