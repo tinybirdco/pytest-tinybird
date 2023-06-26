@@ -14,6 +14,7 @@ Requirements
 
 - Python >=3.8
 - pytest 3.8 or newer (previous versions might be compatible)
+- Tinybird account and a token with append permissions
 
 
 Installation
@@ -30,15 +31,15 @@ Usage
 
 You just need a [tinybird](https://www.tinybird.co/) account and token with append permissions
 
-Set this env variables
+Set these env variables:
 
 ```bash
-  TINYBIRD_URL=<https://api.tinybird.co|https://api.us-east.tinybird.co>   # depends on your region
-  TINYBIRD_DATASOURCE=<datasource_name>  # will be created with first results posted
-  TINYBIRD_TOKEN=<token_with_append_permissions>
+export TINYBIRD_URL=<https://api.tinybird.co|https://api.us-east.tinybird.co>   # depends on your region
+export TINYBIRD_DATASOURCE=<datasource_name>  # will be created with first results posted
+export TINYBIRD_TOKEN=<token_with_append_permissions>
 ```
 
-Just run pytest with `--report-to-tinybird`. 
+Just run pytest with `--report-to-tinybird`.
 
 
 ```bash
@@ -50,13 +51,13 @@ CI execution info is filled using some env variables, the ones from GitLab.
 
 ```bash
 CI_COMMIT_SHA
+CI_COMMIT_BRANCH
 CI_JOB_ID
 CI_JOB_NAME
 CI_JOB_URL
 ```
 
-In case you are not using GitLab you need to set it manually. For instance for GitHub actions you can check 
-current [GitHub actions workflow](.github/workflows/main.yml))
+In case you are not using GitLab you need to set it manually. For instance for GitHub actions you can check our current [GitHub actions workflow](.github/workflows/main.yml))
 
 
 You can check the data source schema with this [data sample](https://api.tinybird.co/v0/pipes/ci_tests_sample.json?token=p.eyJ1IjogIjNhZjhlMTBhLTM2MjEtNDQ3OC04MWJmLTE5MDQ5N2UwNjBjYiIsICJpZCI6ICIwNzMwZTJjYy1mYzA4LTQxMDMtOTMwNy1jMThjYWY5OGI4OGUifQ.kpCQfin0KFC8olEju1qVqDH14nlSzGgqjAWpl1k7RUI)
