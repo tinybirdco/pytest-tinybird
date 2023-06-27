@@ -29,7 +29,7 @@ Installation
 Usage
 ------------
 
-You just need your [tinybird](https://www.tinybird.co/) account and the token with append permissions
+You just need your [Tinybird](https://www.tinybird.co/) account and the token with append permissions
 
 Set these env variables:
 
@@ -57,8 +57,8 @@ CI_JOB_NAME
 CI_JOB_URL
 ```
 
-In case you are not using GitLab you need to set it manually. For instance for GitHub actions you can check our current [GitHub actions workflow](https://github.com/tinybirdco/pytest-tinybird/blob/master/.github/workflows/main.yml))
+In case you are not using GitLab you need to set it manually. For instance, for GitHub actions you can check our current [GitHub actions workflow](https://github.com/tinybirdco/pytest-tinybird/blob/master/.github/workflows/main.yml))
 
 
-You can check the data source schema with this [data sample](https://api.tinybird.co/v0/pipes/ci_tests_sample.json?token=p.eyJ1IjogIjNhZjhlMTBhLTM2MjEtNDQ3OC04MWJmLTE5MDQ5N2UwNjBjYiIsICJpZCI6ICIwNzMwZTJjYy1mYzA4LTQxMDMtOTMwNy1jMThjYWY5OGI4OGUifQ.kpCQfin0KFC8olEju1qVqDH14nlSzGgqjAWpl1k7RUI)
+You can check the Data Source schema with this [data sample](https://api.tinybird.co/v0/pipes/ci_tests_sample.json?token=p.eyJ1IjogIjNhZjhlMTBhLTM2MjEtNDQ3OC04MWJmLTE5MDQ5N2UwNjBjYiIsICJpZCI6ICIwNzMwZTJjYy1mYzA4LTQxMDMtOTMwNy1jMThjYWY5OGI4OGUifQ.kpCQfin0KFC8olEju1qVqDH14nlSzGgqjAWpl1k7RUI)
 of this repo CI executions.
