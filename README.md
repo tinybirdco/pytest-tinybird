@@ -26,7 +26,7 @@ You can install the plugin with the following bash command:
 
 ```bash
   $ pip install pytest-tinybird
-``
+```
 
 
 Usage
