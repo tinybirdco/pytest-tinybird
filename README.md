@@ -1,7 +1,7 @@
 pytest-tinybird
 ===================================
 
-A pytest plugin to report test results to tinybird
+A pytest plugin to report test results to Tinybird. At the end of every run, this plugin posts results using the Tinybird Events API. 
 
 [![PyPI version](https://badge.fury.io/py/pytest-tinybird.svg)](https://badge.fury.io/py/pytest-tinybird)
 ![Passed](https://github.com/jlmadurga/pytest-tinybird/actions/workflows/main.yml/badge.svg)
