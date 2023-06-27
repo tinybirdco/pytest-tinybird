@@ -1,7 +1,7 @@
 pytest-tinybird
 ===================================
 
-A pytest plugin to report test results to Tinybird. At the end of every run, this plugin posts results using the Tinybird Events API. 
+A pytest plugin to report test results to Tinybird. At the end of every run, this plugin posts results using the [Tinybird Events API](https://www.tinybird.co/docs/ingest/events-api.html). 
 
 [![PyPI version](https://badge.fury.io/py/pytest-tinybird.svg)](https://badge.fury.io/py/pytest-tinybird)
 ![Passed](https://github.com/jlmadurga/pytest-tinybird/actions/workflows/main.yml/badge.svg)
@@ -59,6 +59,48 @@ CI_JOB_URL
 
 In case you are not using GitLab you need to set it manually. For instance, for GitHub actions you can check our current [GitHub actions workflow](https://github.com/tinybirdco/pytest-tinybird/blob/master/.github/workflows/main.yml))
 
+Data Source details
+--------------------
 
-You can check the Data Source schema with this [data sample](https://api.tinybird.co/v0/pipes/ci_tests_sample.json?token=p.eyJ1IjogIjNhZjhlMTBhLTM2MjEtNDQ3OC04MWJmLTE5MDQ5N2UwNjBjYiIsICJpZCI6ICIwNzMwZTJjYy1mYzA4LTQxMDMtOTMwNy1jMThjYWY5OGI4OGUifQ.kpCQfin0KFC8olEju1qVqDH14nlSzGgqjAWpl1k7RUI)
-of this repo CI executions.
+The `pytest-tinybird` plugin creates and sends `report` objects via the [Events API](https://www.tinybird.co/docs/ingest/events-api.html) with this structure:
+
+```
+{
+	'date': now,
+	'commit': self.commit,
+	'branch': self.branch,
+	'job_id': self.job_id,
+	'job_url': self.job_url,
+	'job_name': self.job_name,
+	'test_nodeid': test.nodeid,
+	'test_name': test.head_line,
+	'test_part': test.when,
+	'duration': test.duration,
+	'outcome': test.outcome
+}
+```
+
+When a `report` object is first sent to Tinybird, a Data Source with the following definition and schema is created:
+
+```sql
+TOKEN "pytest-executor-write" APPEND
+
+SCHEMA >
+    `commit` String `json:$.commit`,
+    `branch` String `json:$.branch`,
+    `date` DateTime `json:$.date`,
+    `duration` Float32 `json:$.duration`,
+    `job_id` String `json:$.job_id`,
+    `job_name` String `json:$.job_name`,
+    `job_url` String `json:$.job_url`,
+    `outcome` LowCardinality(String) `json:$.outcome`,
+    `test_name` String `json:$.test_name`,
+    `test_nodeid` String `json:$.test_nodeid`,
+    `test_part` LowCardinality(String) `json:$.test_part`
+
+ENGINE MergeTree
+ENGINE_PARTITION_KEY toYYYYMM(date)
+```
+
+You can also see the Data Source schema with this [data sample](https://api.tinybird.co/v0/pipes/ci_tests_sample.json?token=p.eyJ1IjogIjNhZjhlMTBhLTM2MjEtNDQ3OC04MWJmLTE5MDQ5N2UwNjBjYiIsICJpZCI6ICIwNzMwZTJjYy1mYzA4LTQxMDMtOTMwNy1jMThjYWY5OGI4OGUifQ.kpCQfin0KFC8olEju1qVqDH14nlSzGgqjAWpl1k7RUI)
+from an API Endpoint created from the Data Source the `pytest-tinybird` plugin populates.
