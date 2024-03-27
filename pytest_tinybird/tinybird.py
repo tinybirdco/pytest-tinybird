@@ -12,7 +12,10 @@ from _pytest.terminal import TerminalReporter
 
 log = logging.getLogger(__name__)
 
-REQUEST_TIMEOUT = os.environ.get("TINYBIRD_REQUEST_TIMEOUT", 2)
+try:
+    REQUEST_TIMEOUT = int(os.environ.get("TINYBIRD_REQUEST_TIMEOUT", 2))
+except ValueError:
+    REQUEST_TIMEOUT = 2
 
 
 class TinybirdReport:
