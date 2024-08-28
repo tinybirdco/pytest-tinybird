@@ -17,6 +17,8 @@ def test_report_to_tinybird(testdir):
     tinybird_url = os.environ["TINYBIRD_URL"] = 'https://fake-api.tinybird.co'
     datasource_name = os.environ["TINYBIRD_DATASOURCE"] = "test_datasource"
     tinybird_token = os.environ["TINYBIRD_TOKEN"] = 'test_token'
+    timeout = os.environ["TINYBIRD_TIMEOUT"] = 10
+    wait = os.environ["TINYBIRD_WAIT"] = 'false'
 
     with mock.patch('requests.post') as mock_post:
         mock_post.return_value.status_code = 202
@@ -28,4 +30,4 @@ def test_report_to_tinybird(testdir):
         mock_post.assert_called_once_with(f"{tinybird_url}/v0/events?name={datasource_name}"
                                           f"&token={tinybird_token}",
                                           data=mock.ANY,
-                                          timeout=2)
+                                          timeout=timeout)

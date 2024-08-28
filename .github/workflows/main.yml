@@ -32,6 +32,8 @@ jobs:
           CI_JOB_ID: ${{ github.job }}-${{ matrix.python-version }}
           CI_JOB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           CI_JOB_NAME: ${{ github.job }}-${{ matrix.python-version }}
+          TINYBIRD_TIMEOUT: 10
+          TINYBIRD_WAIT: false
         run: |
           tox -e py -- --report-to-tinybird
   lint:

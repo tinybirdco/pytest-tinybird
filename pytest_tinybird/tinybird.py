@@ -19,9 +19,11 @@ class TinybirdReport:
     def __init__(self, config: Config):
         self.config = config
         self.base_url = os.environ.get("TINYBIRD_URL")
+        self.timeout = os.environ.get("TINYBIRD_TIMEOUT", REQUEST_TIMEOUT)
+        self.wait = os.environ.get("TINYBIRD_WAIT", "false")
         self.datasource_name = os.environ.get("TINYBIRD_DATASOURCE")
         self.token = os.environ.get("TINYBIRD_TOKEN")
-        self.url = f"{self.base_url}/v0/events?name={self.datasource_name}&token={self.token}"
+        self.url = f"{self.base_url}/v0/events?name={self.datasource_name}&token={self.token}&wait={self.wait}"
         self.commit = os.environ.get('CI_COMMIT_SHA', 'ci_commit_sha_unknown')
         self.job_id = os.environ.get('CI_JOB_ID', 'ci_job_id_unknown')
         self.job_url = os.environ.get('CI_JOB_URL', 'job_url_unknown')
