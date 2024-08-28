@@ -23,7 +23,6 @@ class TinybirdReport:
         self.wait = os.environ.get("TINYBIRD_WAIT", "false")
         self.datasource_name = os.environ.get("TINYBIRD_DATASOURCE")
         self.token = os.environ.get("TINYBIRD_TOKEN")
-        self.url = f"{self.base_url}/v0/events?name={self.datasource_name}&token={self.token}&wait={self.wait}"
         self.commit = os.environ.get('CI_COMMIT_SHA', 'ci_commit_sha_unknown')
         self.job_id = os.environ.get('CI_JOB_ID', 'ci_job_id_unknown')
         self.job_url = os.environ.get('CI_JOB_URL', 'job_url_unknown')
@@ -32,6 +31,9 @@ class TinybirdReport:
             'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
             os.environ.get('CI_COMMIT_BRANCH', 'ci_commit_branch_unknown')
         )
+        self.url = f"{self.base_url}/v0/events?name={self.datasource_name}" \
+                   f"&token={self.token}" \
+                   f"&wait={self.wait}"
 
     def report(self, session: Session):
         if None in [self.base_url, self.datasource_name, self.token]:
