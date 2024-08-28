@@ -32,4 +32,4 @@ def test_report_to_tinybird(testdir):
                                           f"&token={tinybird_token}"
                                           f"&wait={wait}",
                                           data=mock.ANY,
-                                          timeout=timeout)
+                                          timeout=int(timeout))
