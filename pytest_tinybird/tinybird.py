@@ -69,7 +69,7 @@ class TinybirdReport:
             self.url,
             data=data,
             timeout=REQUEST_TIMEOUT)
-        if response.status_code != 202:
+        if response.status_code not in [200, 202]:
             log.error("Error while uploading to tinybird %s", response.status_code)
 
     @pytest.hookimpl(trylast=True)
