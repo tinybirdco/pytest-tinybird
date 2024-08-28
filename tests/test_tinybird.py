@@ -1,3 +1,4 @@
+import random
 from unittest import mock
 import os
 
@@ -18,10 +19,10 @@ def test_report_to_tinybird(testdir):
     datasource_name = os.environ["TINYBIRD_DATASOURCE"] = "test_datasource"
     tinybird_token = os.environ["TINYBIRD_TOKEN"] = 'test_token'
     timeout = os.environ["TINYBIRD_TIMEOUT"] = "10"
-    wait = os.environ["TINYBIRD_WAIT"] = 'false'
+    wait = os.environ["TINYBIRD_WAIT"] = random.choice(['true', 'false'])
 
     with mock.patch('requests.post') as mock_post:
-        mock_post.return_value.status_code = 202
+        mock_post.return_value.status_code = 200 if wait == 'true' else 200
         testdir.runpytest(
             "-n 2",
             '--report-to-tinybird',
