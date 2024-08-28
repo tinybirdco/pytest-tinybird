@@ -27,7 +27,7 @@ def test_report_to_tinybird(testdir):
             '--report-to-tinybird',
             '-vvv'
         )
-        mock_post.assert_called_once_with(f"{tinybird_url}/v0/events?name={datasource_name}"
+        mock_post.assert_called_once_with(f"{tinybird_url}/v0/events?name={datasource_name}&wait={wait}"
                                           f"&token={tinybird_token}",
                                           data=mock.ANY,
                                           timeout=timeout)
