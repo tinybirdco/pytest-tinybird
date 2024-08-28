@@ -19,7 +19,7 @@ class TinybirdReport:
     def __init__(self, config: Config):
         self.config = config
         self.base_url = os.environ.get("TINYBIRD_URL")
-        self.timeout = os.environ.get("TINYBIRD_TIMEOUT", REQUEST_TIMEOUT)
+        self.timeout = int(os.environ.get("TINYBIRD_TIMEOUT", REQUEST_TIMEOUT))
         self.wait = os.environ.get("TINYBIRD_WAIT", "false")
         self.datasource_name = os.environ.get("TINYBIRD_DATASOURCE")
         self.token = os.environ.get("TINYBIRD_TOKEN")
@@ -68,7 +68,7 @@ class TinybirdReport:
         response = requests.post(
             self.url,
             data=data,
-            timeout=REQUEST_TIMEOUT)
+            timeout=self.timeout)
         if response.status_code not in [200, 202]:
             log.error("Error while uploading to tinybird %s", response.status_code)
 
