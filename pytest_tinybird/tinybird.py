@@ -19,9 +19,10 @@ class TinybirdReport:
     def __init__(self, config: Config):
         self.config = config
         self.base_url = os.environ.get("TINYBIRD_URL")
+        self.timeout = int(os.environ.get("TINYBIRD_TIMEOUT", REQUEST_TIMEOUT))
+        self.wait = os.environ.get("TINYBIRD_WAIT", "false")
         self.datasource_name = os.environ.get("TINYBIRD_DATASOURCE")
         self.token = os.environ.get("TINYBIRD_TOKEN")
-        self.url = f"{self.base_url}/v0/events?name={self.datasource_name}&token={self.token}"
         self.commit = os.environ.get('CI_COMMIT_SHA', 'ci_commit_sha_unknown')
         self.job_id = os.environ.get('CI_JOB_ID', 'ci_job_id_unknown')
         self.job_url = os.environ.get('CI_JOB_URL', 'job_url_unknown')
@@ -30,6 +31,9 @@ class TinybirdReport:
             'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
             os.environ.get('CI_COMMIT_BRANCH', 'ci_commit_branch_unknown')
         )
+        self.url = f"{self.base_url}/v0/events?name={self.datasource_name}" \
+                   f"&token={self.token}" \
+                   f"&wait={self.wait}"
 
     def report(self, session: Session):
         if None in [self.base_url, self.datasource_name, self.token]:
@@ -66,8 +70,8 @@ class TinybirdReport:
         response = requests.post(
             self.url,
             data=data,
-            timeout=REQUEST_TIMEOUT)
-        if response.status_code != 202:
+            timeout=self.timeout)
+        if response.status_code not in [200, 202]:
             log.error("Error while uploading to tinybird %s", response.status_code)
 
     @pytest.hookimpl(trylast=True)
