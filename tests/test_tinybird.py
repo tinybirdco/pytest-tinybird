@@ -22,7 +22,7 @@ def test_report_to_tinybird(testdir):
     wait = os.environ["TINYBIRD_WAIT"] = random.choice(['true', 'false'])
 
     with mock.patch('requests.post') as mock_post:
-        mock_post.return_value.status_code = 200 if wait == 'true' else 200
+        mock_post.return_value.status_code = 200 if wait == 'true' else 202
         testdir.runpytest(
             "-n 2",
             '--report-to-tinybird',
