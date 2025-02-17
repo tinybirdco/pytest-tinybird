@@ -33,3 +33,27 @@ def test_report_to_tinybird(testdir):
                                           f"&wait={wait}",
                                           data=mock.ANY,
                                           timeout=int(timeout))
+
+
+def test_retry_to_tinybird(testdir):
+    # create a temporary pytest test module
+    testdir.makepyfile("""
+        import pytest
+        def test_passed():
+            assert True
+        """)
+
+    os.environ["TINYBIRD_URL"] = 'https://fake-api.tinybird.co'
+    os.environ["TINYBIRD_DATASOURCE"] = "test_datasource"
+    os.environ["TINYBIRD_TOKEN"] = 'test_token'
+    os.environ["TINYBIRD_TIMEOUT"] = "1"
+    os.environ["TINYBIRD_RETRIES"] = "1"
+
+    with mock.patch('requests.post') as mock_post:
+        mock_post.return_value.status_code = 503
+        testdir.runpytest(
+            "-n 1",
+            '--report-to-tinybird',
+            '-vvv'
+        )
+        assert mock_post.call_count == 2

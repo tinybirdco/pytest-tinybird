@@ -1,12 +1,13 @@
-import os
-import logging
-from typing import Union
-from datetime import datetime
 import json
+import logging
+import os
+import time
+from datetime import datetime
+from typing import Union
 
-import requests
 import pytest
-from _pytest.config import ExitCode, Config
+import requests
+from _pytest.config import Config, ExitCode
 from _pytest.main import Session
 from _pytest.terminal import TerminalReporter
 
@@ -20,6 +21,7 @@ class TinybirdReport:
         self.config = config
         self.base_url = os.environ.get("TINYBIRD_URL")
         self.timeout = int(os.environ.get("TINYBIRD_TIMEOUT", REQUEST_TIMEOUT))
+        self.retries = int(os.environ.get('TINYBIRD_RETRIES', 0))
         self.wait = os.environ.get("TINYBIRD_WAIT", "false")
         self.datasource_name = os.environ.get("TINYBIRD_DATASOURCE")
         self.token = os.environ.get("TINYBIRD_TOKEN")
@@ -66,13 +68,25 @@ class TinybirdReport:
                 except AttributeError:
                     pass
         data = '\n'.join(json.dumps(x) for x in report)
-        # This goes to the Internal workspace in EU
-        response = requests.post(
-            self.url,
-            data=data,
-            timeout=self.timeout)
-        if response.status_code not in [200, 202]:
-            log.error("Error while uploading to tinybird %s", response.status_code)
+        for attempt in range(self.retries + 1):
+            try:
+                # This goes to the Internal workspace in EU
+                response = requests.post(
+                    self.url,
+                    data=data,
+                    timeout=self.timeout
+                )
+                if response.status_code in [200, 202]:
+                    break 
+                log.error("Error while uploading to tinybird %s (Attempt %s/%s)", 
+                         response.status_code, attempt + 1, self.retries + 1)
+            except requests.exceptions.RequestException as e:
+                log.error("Request failed: %s (Attempt %s/%s)", 
+                         e, attempt + 1, self.retries + 1)
+            if attempt < self.retries:
+                time.sleep(2 ** attempt)
+        else:
+            log.error("All %s attempts failed to upload to tinybird", self.retries + 1)
 
     @pytest.hookimpl(trylast=True)
     def pytest_sessionfinish(self, session: Session, exitstatus: Union[int, ExitCode]):
