@@ -77,12 +77,12 @@ class TinybirdReport:
                     timeout=self.timeout
                 )
                 if response.status_code in [200, 202]:
-                    break 
-                log.error("Error while uploading to tinybird %s (Attempt %s/%s)", 
-                         response.status_code, attempt + 1, self.retries + 1)
+                    break
+                log.error("Error while uploading to tinybird %s (Attempt %s/%s)",
+                          response.status_code, attempt + 1, self.retries + 1)
             except requests.exceptions.RequestException as e:
-                log.error("Request failed: %s (Attempt %s/%s)", 
-                         e, attempt + 1, self.retries + 1)
+                log.error("Request failed: %s (Attempt %s/%s)",
+                          e, attempt + 1, self.retries + 1)
             if attempt < self.retries:
                 time.sleep(2 ** attempt)
         else:
