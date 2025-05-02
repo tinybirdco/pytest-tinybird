@@ -37,6 +37,10 @@ class TinybirdReport:
                    f"&token={self.token}" \
                    f"&wait={self.wait}"
 
+        # optional values for multi-repository and multi-workflow usage
+        self.repository = os.environ.get('CI_REPOSITORY_NAME', None)
+        self.workflow = os.environ.get('CI_WORKFLOW_NAME', None)
+
     def report(self, session: Session):
         if None in [self.base_url, self.datasource_name, self.token]:
             log.error("Required values for environment variables")
@@ -52,7 +56,7 @@ class TinybirdReport:
         for k in terminalreporter.stats:
             for test in terminalreporter.stats[k]:
                 try:
-                    report.append({
+                    report_entry = {
                         'date': now,
                         'commit': self.commit,
                         'branch': self.branch,
@@ -64,7 +68,16 @@ class TinybirdReport:
                         'test_part': test.when,
                         'duration': test.duration,
                         'outcome': test.outcome
-                    })
+                    }
+                    report_optionals = {
+                        'repository': self.repository,
+                        'workflow': self.workflow
+                    }
+                    # only add optional values if they're not None
+                    report_entry.update({k: v for k, v
+                                         in report_optionals.items()
+                                         if v is not None})
+                    report.append(report_entry)
                 except AttributeError:
                     pass
         data = '\n'.join(json.dumps(x) for x in report)
