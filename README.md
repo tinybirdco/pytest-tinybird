@@ -91,6 +91,9 @@ There are also additional optional values that can be set for multi-repository a
 }
 ```
 
+To use these, you will need to set the `CI_REPOSITORY_NAME` and `CI_WORKFLOW_NAME` environment variables respectively.
+
+
 When a `report` object is first sent to Tinybird, a Data Source with the following definition and schema is created:
 
 ```sql
