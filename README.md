@@ -82,6 +82,18 @@ The `pytest-tinybird` plugin creates and sends `report` objects via the [Events 
 }
 ```
 
+There are also additional optional values that can be set for multi-repository and multi-workflow setups (e.g., in GitHub Actions):
+
+```
+{
+    'repository': self.repository
+    'workflow': self.workflow
+}
+```
+
+To use these, you will need to set the `CI_REPOSITORY_NAME` and `CI_WORKFLOW_NAME` environment variables respectively.
+
+
 When a `report` object is first sent to Tinybird, a Data Source with the following definition and schema is created:
 
 ```sql
