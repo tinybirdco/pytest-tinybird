@@ -59,8 +59,8 @@ def test_retry_to_tinybird(testdir):
         assert mock_post.call_count == 2
 
 
-def test_payload_size_limit_chunking(testdir):
-    """Test that payloads exceeding 10MB are chunked into multiple requests"""
+def test_payload_size_limit_truncation(testdir):
+    """Test that payloads exceeding 10MB are truncated to stay within limit"""
     
     # Create a test file that will generate many test cases
     test_content = """
@@ -69,7 +69,7 @@ import pytest
 """
     
     # Generate many test functions to create a large payload that definitely exceeds 10MB
-    for i in range(15000):  # Increased to ensure payload > 10MB
+    for i in range(15000):  # This will create a payload > 10MB
         test_content += f"""
 def test_large_payload_{i}():
     '''This is a test with a very long description that will contribute to payload size: {"x" * 500}'''
@@ -87,15 +87,15 @@ def test_large_payload_{i}():
     with mock.patch('requests.post') as mock_post:
         mock_post.return_value.status_code = 202
         
-        # Capture all data parameters to verify chunking
-        all_request_data = []
+        # Capture the data parameter to verify truncation
+        captured_data = ""
         
         def capture_data(*args, **kwargs):
-            data = kwargs.get('data', '')
-            all_request_data.append(data)
-            data_size_bytes = len(data.encode('utf-8'))
+            nonlocal captured_data
+            captured_data = kwargs.get('data', '')
+            data_size_bytes = len(captured_data.encode('utf-8'))
             max_size_bytes = 10 * 1024 * 1024  # 10MB
-            assert data_size_bytes <= max_size_bytes, f"Chunk size {data_size_bytes} exceeds {max_size_bytes} bytes"
+            assert data_size_bytes <= max_size_bytes, f"Payload size {data_size_bytes} exceeds {max_size_bytes} bytes"
             return mock.Mock(status_code=202)
         
         mock_post.side_effect = capture_data
@@ -105,19 +105,24 @@ def test_large_payload_{i}():
             '-v'
         )
         
-        # Verify multiple requests were made (chunking occurred)
-        assert mock_post.call_count > 1, f"Expected multiple requests for chunking, but got {mock_post.call_count}"
+        # Verify exactly one request was made (truncation, not chunking)
+        assert mock_post.call_count == 1, f"Expected single request with truncation, but got {mock_post.call_count}"
         
-        # Verify each chunk is within the size limit
-        for i, data in enumerate(all_request_data):
-            chunk_size = len(data.encode('utf-8'))
-            max_size_bytes = 10 * 1024 * 1024  # 10MB
-            assert chunk_size <= max_size_bytes, f"Chunk {i+1} size {chunk_size} exceeds {max_size_bytes} bytes"
+        # Verify captured_data was set
+        assert captured_data is not None and captured_data != "", "No data was captured from the request"
         
-        # Verify all data is preserved by checking total content
-        combined_data = '\n'.join(all_request_data)
-        # Each test should appear in the combined data
-        assert 'test_large_payload_0' in combined_data, "First test missing in chunked data"
-        assert 'test_large_payload_14999' in combined_data, "Last test missing in chunked data"
+        # Verify the payload is within the size limit
+        data_size_bytes = len(captured_data.encode('utf-8'))
+        max_size_bytes = 10 * 1024 * 1024  # 10MB
+        assert data_size_bytes <= max_size_bytes, f"Truncated payload size {data_size_bytes} exceeds {max_size_bytes} bytes"
         
-        print(f"Successfully chunked data into {mock_post.call_count} requests")
+        # Verify some data is present (not completely empty)
+        assert len(captured_data) > 0, "Payload should contain some test data"
+        
+        # Verify early tests are preserved (truncation keeps first entries)
+        assert 'test_large_payload_0' in captured_data, "First test should be preserved in truncated data"
+        
+        # Verify later tests are truncated (last tests should be missing)
+        assert 'test_large_payload_14999' not in captured_data, "Last test should be truncated"
+        
+        print(f"Successfully truncated large payload to stay within 10MB limit")

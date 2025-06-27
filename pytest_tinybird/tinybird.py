@@ -83,71 +83,42 @@ class TinybirdReport:
                 except AttributeError:
                     pass
         
-        # Convert report to data string and check if chunking is needed
+        # Check payload size and truncate if necessary
         full_data = '\n'.join(json.dumps(x) for x in report)
         full_data_size_bytes = len(full_data.encode('utf-8'))
         
-        if full_data_size_bytes <= MAX_PAYLOAD_SIZE_BYTES:
-            # Single request is sufficient
-            self._send_data(full_data)
-        else:
-            # Need to chunk the data into multiple requests
-            log.info(
-                "Payload size (%d bytes, %.2f MB) exceeds maximum limit of %d MB. "
-                "Chunking into multiple requests.",
-                full_data_size_bytes, 
+        if full_data_size_bytes > MAX_PAYLOAD_SIZE_BYTES:
+            log.warning(
+                "Payload size (%.2f MB) exceeds 10MB limit with %d test entries. "
+                "Truncating to fit within limit.",
                 full_data_size_bytes / (1024 * 1024),
-                MAX_PAYLOAD_SIZE_MB
+                len(report)
             )
             
-            chunks = self._chunk_report_data(report)
-            log.info("Sending %d chunks to stay within %d MB limit per request", len(chunks), MAX_PAYLOAD_SIZE_MB)
+            # Truncate entries to fit within size limit
+            truncated_report = []
+            current_size = 0
             
-            for i, chunk_data in enumerate(chunks, 1):
-                log.debug("Sending chunk %d/%d (%.2f MB)", i, len(chunks), len(chunk_data.encode('utf-8')) / (1024 * 1024))
-                self._send_data(chunk_data)
+            for entry in report:
+                entry_data = json.dumps(entry) + '\n'
+                entry_size = len(entry_data.encode('utf-8'))
+                
+                if current_size + entry_size <= MAX_PAYLOAD_SIZE_BYTES:
+                    truncated_report.append(entry)
+                    current_size += entry_size
+                else:
+                    break
+            
+            data = '\n'.join(json.dumps(x) for x in truncated_report)
+            log.info(
+                "Truncated to %d entries (%.2f MB) to stay within 10MB limit. "
+                "Consider splitting large test suites for complete reporting.",
+                len(truncated_report),
+                current_size / (1024 * 1024)
+            )
+        else:
+            data = full_data
 
-    def _chunk_report_data(self, report):
-        """Split report data into chunks that fit within the size limit."""
-        chunks = []
-        current_chunk = []
-        current_size = 0
-        
-        for entry in report:
-            entry_data = json.dumps(entry)
-            entry_size = len((entry_data + '\n').encode('utf-8'))
-            
-            # If a single entry exceeds the limit, we still need to include it
-            # (this is an edge case that should rarely happen)
-            if entry_size > MAX_PAYLOAD_SIZE_BYTES:
-                log.warning("Single test entry exceeds %d MB limit (%.2f MB). Including in separate chunk.", 
-                           MAX_PAYLOAD_SIZE_MB, entry_size / (1024 * 1024))
-                if current_chunk:
-                    chunks.append('\n'.join(json.dumps(x) for x in current_chunk))
-                    current_chunk = []
-                    current_size = 0
-                chunks.append(entry_data)
-                continue
-            
-            # Check if adding this entry would exceed the limit
-            if current_size + entry_size > MAX_PAYLOAD_SIZE_BYTES and current_chunk:
-                # Finalize current chunk and start a new one
-                chunks.append('\n'.join(json.dumps(x) for x in current_chunk))
-                current_chunk = [entry]
-                current_size = entry_size
-            else:
-                # Add entry to current chunk
-                current_chunk.append(entry)
-                current_size += entry_size
-        
-        # Add the last chunk if it has any entries
-        if current_chunk:
-            chunks.append('\n'.join(json.dumps(x) for x in current_chunk))
-        
-        return chunks
-
-    def _send_data(self, data):
-        """Send data to Tinybird with retry logic."""
         for attempt in range(self.retries + 1):
             try:
                 # This goes to the Internal workspace in EU
@@ -157,7 +128,7 @@ class TinybirdReport:
                     timeout=self.timeout
                 )
                 if response.status_code in [200, 202]:
-                    return  # Success, exit retry loop
+                    break
                 log.error("Error while uploading to tinybird %s (Attempt %s/%s)",
                           response.status_code, attempt + 1, self.retries + 1)
             except requests.exceptions.RequestException as e:
