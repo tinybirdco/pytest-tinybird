@@ -57,3 +57,49 @@ def test_retry_to_tinybird(testdir):
             '-vvv'
         )
         assert mock_post.call_count == 2
+
+
+def test_payload_size_limit_truncation(testdir):
+    """Test that payloads exceeding 10MB are truncated properly"""
+    
+    # Create a test file that will generate many test cases
+    test_content = """
+import pytest
+
+"""
+    
+    # Generate many test functions to create a large payload
+    for i in range(5000):  # This should create a payload > 10MB
+        test_content += f"""
+def test_large_payload_{i}():
+    '''This is a test with a very long description that will contribute to payload size: {"x" * 200}'''
+    assert True
+"""
+    
+    testdir.makefile('.py', test_large_payload=test_content)
+
+    os.environ["TINYBIRD_URL"] = 'https://fake-api.tinybird.co'
+    os.environ["TINYBIRD_DATASOURCE"] = "test_datasource"
+    os.environ["TINYBIRD_TOKEN"] = 'test_token'
+    os.environ["TINYBIRD_TIMEOUT"] = "10"
+    os.environ["TINYBIRD_WAIT"] = "false"
+
+    with mock.patch('requests.post') as mock_post:
+        mock_post.return_value.status_code = 202
+        
+        # Capture the data parameter to verify size limit
+        def capture_data(*args, **kwargs):
+            data = kwargs.get('data', '')
+            data_size_bytes = len(data.encode('utf-8'))
+            max_size_bytes = 10 * 1024 * 1024  # 10MB
+            assert data_size_bytes <= max_size_bytes, f"Payload size {data_size_bytes} exceeds {max_size_bytes} bytes"
+            return mock.Mock(status_code=202)
+        
+        mock_post.side_effect = capture_data
+        
+        testdir.runpytest(
+            '--report-to-tinybird',
+            '-v'
+        )
+        
+        assert mock_post.call_count == 1

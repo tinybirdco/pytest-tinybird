@@ -14,6 +14,8 @@ from _pytest.terminal import TerminalReporter
 log = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = 2
+MAX_PAYLOAD_SIZE_MB = 10
+MAX_PAYLOAD_SIZE_BYTES = MAX_PAYLOAD_SIZE_MB * 1024 * 1024  # 10MB in bytes
 
 
 class TinybirdReport:
@@ -80,7 +82,42 @@ class TinybirdReport:
                     report.append(report_entry)
                 except AttributeError:
                     pass
+        
+        # Convert report to data string and check size limit
         data = '\n'.join(json.dumps(x) for x in report)
+        data_size_bytes = len(data.encode('utf-8'))
+        
+        if data_size_bytes > MAX_PAYLOAD_SIZE_BYTES:
+            log.warning(
+                "Payload size (%d bytes, %.2f MB) exceeds maximum limit of %d MB. "
+                "Truncating payload to fit within limit.",
+                data_size_bytes, 
+                data_size_bytes / (1024 * 1024),
+                MAX_PAYLOAD_SIZE_MB
+            )
+            
+            # Truncate the report to fit within size limit
+            truncated_report = []
+            current_size = 0
+            
+            for entry in report:
+                entry_data = json.dumps(entry) + '\n'
+                entry_size = len(entry_data.encode('utf-8'))
+                
+                if current_size + entry_size <= MAX_PAYLOAD_SIZE_BYTES:
+                    truncated_report.append(entry)
+                    current_size += entry_size
+                else:
+                    log.info(
+                        "Truncated payload to %d entries (%.2f MB) to stay within %d MB limit",
+                        len(truncated_report),
+                        current_size / (1024 * 1024),
+                        MAX_PAYLOAD_SIZE_MB
+                    )
+                    break
+            
+            data = '\n'.join(json.dumps(x) for x in truncated_report)
+
         for attempt in range(self.retries + 1):
             try:
                 # This goes to the Internal workspace in EU
